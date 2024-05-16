@@ -6,11 +6,13 @@
 
 ## Einrichten der Arbeitsumgebung ##
 
-# Zuallererst sollten Sie das Arbeitsverzeichnis festlegen, in dem Sie die im Verlauf 
-# dieses Tutorials anfallenden Dateien speichern möchten. Sie können dies über das Menü 
-# oben festlegen: Session > Set Working Directory > Choose Directory.
+# Zuallererst sollten Sie das Arbeitsverzeichnis, in dem Sie die im Verlauf dieses Tutorials
+# anfallenden Dateien speichern, festlegen. Dafür können Sie mit getwd() herausfinden, wo RStudio 
+# Ihre Dateien speichern würde, und dies gegebenenfalls mit setwd() ändern. 
+getwd()
+setwd("pfad/zu/meinem/arbeitsverzeichnis")
 
-# Danach richten wir die Arbeitsumgebung ein, indem die benötigten Bibliotheken installiert werden.
+# Danach wird die Arbeitsumgebung eingerichtet, indem die benötigten Bibliotheken installiert werden.
 install.packages("oai")
 install.packages("stringr")
 install.packages("jsonlite")
@@ -38,16 +40,18 @@ id("https://oai.sbb.berlin/")
 #   granularity                   YYYY-MM-DDThh:mm:ssZ 
 #   description                   oaidigital.staatsbibliothek-berlin.de:oai:digital.staatsbibliothek-berlin.de:PPN123456789
 
+## Abfrage aller Datensets ##
+
 # Im nächsten Schritt werden alle verfügbaren Datensets mit der Funktion 
 # list_sets abgefragt und angezeigt.
 list_sets("https://oai.sbb.berlin/?verb=ListSets")
 
-#Um die Abfrageergebnisse leichter lesbar darzustellen, nutzen Sie den 
+# Um die Abfrageergebnisse leichter lesbar darzustellen, nutzen Sie den 
 # nachfolgenden Code, der die Ergebnisse in tabellarischer Form präsentiert.
 SBB_Sets <- list_sets("https://oai.sbb.berlin/?verb=ListSets")
 View(SBB_Sets)
 
-# Um herauszufinden, in welchen Metadatenformaten die OAI-Schnittstelle Datensätze ausgibt, 
+# Um herauszufinden, in welche Metadatenformate die OAI-Schnittstelle Datensätze ausgibt, 
 # können wir folgenden Code verwenden.
 Metadata <- list_metadataformats(url = "https://oai.sbb.berlin/")
 View(Metadata)
@@ -65,17 +69,19 @@ count_identifiers(url = "https://oai.sbb.berlin/?verb=ListIdentifiers&set=illust
                   prefix = "oai_dc")
 # Insgesamt = 1589 Datensätze
 
-# Darauf aufbauend betrachten wir alle Datensätze und lassen uns diese, 
-# zur besseren Lesbarkeit, in Form einer Tabelle ausgeben.
+# Darauf aufbauend betrachten wir alle Datensätze und lassen uns diese 
+# zur besseren Lesbarkeit in Form einer Tabelle ausgeben.
 record_list <- list_records("https://oai.sbb.berlin/", 
                             metadataPrefix="oai_dc", 
                             set="illustrierte.liedflugschriften")
-# Ausgabe in einer Tabelle.
+# Betrachten der Tabelle
 View(record_list)
+
+## Ausgabe von Titeln und Autoren eines Sets ##
 
 # Haben Sie nun beschlossen, dass für Sie vor allem die Autoren und Titel 
 # der Liedflugschriften wichtig sind, können Sie sich diese mit folgendem Code 
-# ausgeben lassen.Beachten Sie bitte, dass die Ausgabe der Antworten 
+# ausgeben lassen. Beachten Sie bitte, dass die Ausgabe der Antworten 
 # hier auf 10 beschränkt wurde. Sollten Sie mehr Antworten ausgeben lassen wollen, 
 # ändern Sie bitte die Zahl in den Klammern.
 head(record_list$title, 10)
@@ -90,7 +96,7 @@ install.packages("dplyr")
 library(dplyr)
 
 # Im folgenden Code werden die Links zu den digitalisierten Objekten ausgegeben. 
-# Diese müssen wir selbst erstellen, indem wir die OAI-Adresse durch den Link 
+# Diese müssen wir manuell erstellen, indem wir die OAI-Adresse durch den Link 
 # zur Werkansicht ersetzen.
 record_list$Werkansicht <- record_list$identifier
 record_list %>% 
@@ -101,6 +107,7 @@ record_list %>%
 # Zahl in der Klammer.
 head(record_list$Werkansicht, 10)
 
+## Herunterladen der Daten als CSV-Datei und im JSON-Format ##
 
 # Gehen wir nun davon aus, dass Sie die folgenden Metadaten für die Weiterverwendung benötigen:
 # date, coverage, publisher und creator. Exemplarisch werden wir diese für alle 1589 Objekte 
@@ -124,5 +131,4 @@ record_data_oai_dc_xml <- get_records(ids = record_list$identifier,
 
 json_obj_dc = toJSON(record_data_oai_dc_xml, pretty=TRUE, auto_unbox=TRUE)
 write(json_obj_dc, "illustrierte.liedflugschriften.oai_dc.json")
-
 
